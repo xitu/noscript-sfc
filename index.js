@@ -19,8 +19,11 @@ function makeComponent(component) {
   if(!/\.vue$/.test(module)) {
     moduleName += '.vue';
   }
+  if(/(^|\/)\.\//g.test(moduleName)) {
+    moduleName = moduleName.replace(/(^|\/)\.\//g, '$1');
+  }
+  component.setAttribute('module', moduleName);
   if(module) {
-    const code = component.innerHTML;
     return [getBlobURL(`
       import * as Vue from 'vue';
       import {loadModule} from 'sfc-loader';
@@ -28,8 +31,11 @@ function makeComponent(component) {
         moduleCache: {
           vue: Vue
         },
-        async getFile() {
-          return \`${code}\`;
+        async getFile(url) {
+          const component = document.querySelector(\`[type="vue-sfc"][component="\${url}"]\`)
+            || document.querySelector(\`[type="vue-sfc"][module="\${url}"]\`);
+          if(component) return component.innerHTML;
+          throw new Error(\`Unknown component \${url}.\`);
         },
         addStyle(textContent) {
           const style = Object.assign(document.createElement('style'), {textContent});

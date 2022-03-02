@@ -5,7 +5,7 @@ Load vue3 SFC component with inline `<noscript>` tag. Funny :-) :Yeah:
 https://codepen.io/akira-cn-the-selector/pen/mdqQYEg
 
 ```html
-<noscript type="vue-sfc" component="./MyComponent" mount="#app">
+<noscript type="vue-sfc" component="MyComponent" mount="#app">
   <script>
     export default {
       data() {
