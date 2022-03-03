@@ -35,7 +35,12 @@ function makeComponent(component) {
           const component = document.querySelector(\`[type="vue-sfc"][component="\${url}"]\`)
             || document.querySelector(\`[type="vue-sfc"][module="\${url}"]\`);
           if(component) return component.innerHTML;
-          throw new Error(\`Unknown component \${url}.\`);
+          const res = await fetch(url);
+          if ( !res.ok )
+            throw Object.assign(new Error(res.statusText + ' ' + url), { res });
+          return {
+            getContentData: asBinary => asBinary ? res.arrayBuffer() : res.text(),
+          }
         },
         addStyle(textContent) {
           const style = Object.assign(document.createElement('style'), {textContent});
