@@ -2,7 +2,7 @@ module.exports = {
   globals: {
     globalThis: true,
   },
-  extends:  "eslint-config-75team",
+  extends:  "eslint-config-next",
   rules: {
     "semi": [2, "always"],
     "complexity": ["warn", 25],

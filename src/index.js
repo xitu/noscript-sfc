@@ -20,8 +20,11 @@ function transformVueSFC(source, filename) {
       mode: 'module',
     },
   };
-  const script = compiler.compileScript(descriptor, {id, templateOptions});
-  const template = compiler.compileTemplate(templateOptions);
+  const script = compiler.compileScript(descriptor, {id, templateOptions, sourceMap:true});
+  if(script.map) {
+    script.content = `${script.content}\n//# sourceMappingURL=data:application/json;base64,${btoa(JSON.stringify(script.map))}`;
+  }
+  const template = compiler.compileTemplate({...templateOptions});
   let cssInJS = '';
   if(descriptor.styles) {
     const styled = descriptor.styles.map((style) => {
