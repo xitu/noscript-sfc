@@ -24,7 +24,7 @@ function transformVueSFC(source, filename) {
   if(script.map) {
     script.content = `${script.content}\n//# sourceMappingURL=data:application/json;base64,${btoa(JSON.stringify(script.map))}`;
   }
-  const template = compiler.compileTemplate({...templateOptions});
+  const template = compiler.compileTemplate(templateOptions);
   let cssInJS = '';
   if(descriptor.styles) {
     const styled = descriptor.styles.map((style) => {
