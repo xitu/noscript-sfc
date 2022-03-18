@@ -90,13 +90,12 @@ const currentScript = document.currentScript || document.querySelector('script')
 function setup() {
   const components = document.querySelectorAll('noscript[type="vue-sfc"]');
   const importMap = {};
-  let mount = null;
+  let mount = [];
 
   [...components].forEach((component) => {
     const [url, module] = makeComponent(component);
     if(component.hasAttribute('mount')) {
-      if(mount) throw new Error('Not support multiple app entrances.');
-      mount = [module, component.getAttribute('mount')];
+      mount.push([module, component.getAttribute('mount')]);
     }
     if(url) {
       importMap[module] = url;
@@ -123,13 +122,18 @@ function setup() {
   mapEl.textContent = JSON.stringify(map);
   currentScript.after(mapEl);
 
+
   if(mount) {
     const script = document.createElement('script');
     script.setAttribute('type', 'module');
+
+    const apps = mount.map((item, index)=>`
+    import App${index} from '${item[0]}';
+    createApp(App${index}).mount('${item[1]}');`).join('');
+
     script.innerHTML = `
       import {createApp} from 'vue';
-      import App from '${mount[0]}';
-      createApp(App).mount('${mount[1]}');    
+      ${apps}
     `;
     document.body.appendChild(script);
   }
