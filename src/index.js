@@ -3,7 +3,7 @@ import * as compiler from '@vue/compiler-sfc';
 function generateID() {
   return Math.random().toString(36).slice(2, 12);
 }
-function transformVueSFC(source, filename) {
+function transformVueSFC(source, filename, mountname) {
   const {descriptor, errors} = compiler.parse(source, {filename});
   if(errors.length) throw new Error(errors.toString());
   const id = generateID();
@@ -40,7 +40,7 @@ function transformVueSFC(source, filename) {
       });
     });
     if(styled.length) {
-      const cssCode = styled.map(s => s.code).join('\n');
+      const cssCode = styled.map(s => `${mountname} ${s.code}`).join('\n');
       cssInJS = `(function(){const el = document.createElement('style');
 el.innerHTML = \`${cssCode}\`;
 document.body.appendChild(el);}());`;
@@ -80,7 +80,7 @@ function makeComponent(component) {
   }
   component.setAttribute('module', moduleName);
   if(module) {
-    return [getBlobURL(transformVueSFC(component.innerHTML, moduleName)), module];
+    return [getBlobURL(transformVueSFC(component.innerHTML, moduleName, component.getAttribute('mount'))), module];
   }
   return [];
 }
