@@ -122,15 +122,12 @@ function setup() {
   mapEl.textContent = JSON.stringify(map);
   currentScript.after(mapEl);
 
-
   if(mount) {
     const script = document.createElement('script');
     script.setAttribute('type', 'module');
-
     const apps = mount.map((item, index)=>`
     import App${index} from '${item[0]}';
     createApp(App${index}).mount('${item[1]}');`).join('');
-
     script.innerHTML = `
       import {createApp} from 'vue';
       ${apps}
