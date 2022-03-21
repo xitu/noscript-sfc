@@ -3,7 +3,7 @@ import * as compiler from '@vue/compiler-sfc';
 function generateID() {
   return Math.random().toString(36).slice(2, 12);
 }
-function transformVueSFC(source, filename) {
+function transformVueSFC(source, filename, mountname) {
   const {descriptor, errors} = compiler.parse(source, {filename});
   if(errors.length) throw new Error(errors.toString());
   const id = generateID();
@@ -40,7 +40,7 @@ function transformVueSFC(source, filename) {
       });
     });
     if(styled.length) {
-      const cssCode = styled.map(s => s.code).join('\n');
+      const cssCode = styled.map(s => `${mountname} ${s.code}`).join('\n');
       cssInJS = `(function(){const el = document.createElement('style');
 el.innerHTML = \`${cssCode}\`;
 document.body.appendChild(el);}());`;
@@ -80,7 +80,7 @@ function makeComponent(component) {
   }
   component.setAttribute('module', moduleName);
   if(module) {
-    return [getBlobURL(transformVueSFC(component.innerHTML, moduleName)), module];
+    return [getBlobURL(transformVueSFC(component.innerHTML, moduleName, component.getAttribute('mount'))), module];
   }
   return [];
 }
@@ -90,13 +90,12 @@ const currentScript = document.currentScript || document.querySelector('script')
 function setup() {
   const components = document.querySelectorAll('noscript[type="vue-sfc"]');
   const importMap = {};
-  let mount = null;
+  let mount = [];
 
   [...components].forEach((component) => {
     const [url, module] = makeComponent(component);
     if(component.hasAttribute('mount')) {
-      if(mount) throw new Error('Not support multiple app entrances.');
-      mount = [module, component.getAttribute('mount')];
+      mount.push([module, component.getAttribute('mount')]);
     }
     if(url) {
       importMap[module] = url;
@@ -126,10 +125,12 @@ function setup() {
   if(mount) {
     const script = document.createElement('script');
     script.setAttribute('type', 'module');
+    const apps = mount.map((item, index)=>`
+    import App${index} from '${item[0]}';
+    createApp(App${index}).mount('${item[1]}');`).join('');
     script.innerHTML = `
       import {createApp} from 'vue';
-      import App from '${mount[0]}';
-      createApp(App).mount('${mount[1]}');    
+      ${apps}
     `;
     document.body.appendChild(script);
   }
