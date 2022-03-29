@@ -1,5 +1,8 @@
 import * as compiler from '@vue/compiler-sfc';
 
+function toBase64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
 function generateID() {
   return Math.random().toString(36).slice(2, 12);
 }
@@ -22,12 +25,12 @@ function transformVueSFC(source, filename, mountname) {
   };
   const script = compiler.compileScript(descriptor, {id, templateOptions, sourceMap:true});
   if(script.map) {
-    script.content = `${script.content}\n//# sourceMappingURL=data:application/json;base64,${btoa(JSON.stringify(script.map))}`;
+    script.content = `${script.content}\n//# sourceMappingURL=data:application/json;base64,${toBase64(JSON.stringify(script.map))}`;
   }
   const template = compiler.compileTemplate({...templateOptions, sourceMap: true});
   if(template.map) {
     template.map.sources[0] = `${template.map.sources[0]}?template`;
-    template.code = `${template.code}\n//# sourceMappingURL=data:application/json;base64,${btoa(JSON.stringify(template.map))}`;
+    template.code = `${template.code}\n//# sourceMappingURL=data:application/json;base64,${toBase64(JSON.stringify(template.map))}`;
   }
   let cssInJS = '';
   if(descriptor.styles) {
