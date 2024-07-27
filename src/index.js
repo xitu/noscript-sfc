@@ -27,7 +27,15 @@ function transformVueSFC(source, filename, mountname) {
   if(script.map) {
     script.content = `${script.content}\n//# sourceMappingURL=data:application/json;base64,${toBase64(JSON.stringify(script.map))}`;
   }
-  const template = compiler.compileTemplate({...templateOptions, sourceMap: true});
+  const template = compiler.compileTemplate({
+    ...templateOptions,
+    sourceMap: true,
+    compilerOptions: {
+      ...templateOptions.compilerOptions,
+      // https://github.com/vuejs/repl/blob/2daac718a212e61d200cecdfc3623535bd0196a9/src/transform.ts#L167C7-L167C15
+      bindingMetadata: script.bindings,
+    }
+  });
   if(template.map) {
     template.map.sources[0] = `${template.map.sources[0]}?template`;
     template.code = `${template.code}\n//# sourceMappingURL=data:application/json;base64,${toBase64(JSON.stringify(template.map))}`;
